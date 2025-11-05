@@ -1,0 +1,10 @@
+export * from './LoginPage';
+export * from './DashboardPage';
+export * from './BVNPage';
+export * from './SelfiePage';
+export * from './LocationPage';
+export * from './BankStatementPage';
+export * from './ApplicationsPage';
+export * from './ApplicationDetailsPage';
+export * from './AuditPage';
+
