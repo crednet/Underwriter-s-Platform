@@ -17,7 +17,7 @@ COPY . .
 RUN npm run build
 
 # Step 7: Expose port 6009 for the app
-EXPOSE 70
+EXPOSE 77
 
 # Step 8: Start the application in production mode
 CMD ["npm", "run", "preview"]
