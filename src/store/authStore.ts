@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { User, AuthState } from "../types";
+import { authService } from "../services/authService";
 
 interface AuthStore extends AuthState {
   login: (email: string, password: string) => Promise<void>;
@@ -15,26 +16,14 @@ export const useAuthStore = create<AuthStore>()(
       isAuthenticated: false,
       isLoading: false,
 
-      login: async (email: string, _password: string) => {
+      login: async (email: string, password: string) => {
         set({ isLoading: true });
 
         try {
-          // TODO: Replace with actual API call
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-
-          const mockUser: User = {
-            id: "1",
-            email,
-            firstName: "John",
-            lastName: "Doe",
-            role: "UNDERWRITER" as any,
-            department: "Credit Assessment",
-            createdAt: new Date().toISOString(),
-            lastLogin: new Date().toISOString(),
-          };
+          const { user } = await authService.login(email, password);
 
           set({
-            user: mockUser,
+            user,
             isAuthenticated: true,
             isLoading: false,
           });
@@ -44,7 +33,8 @@ export const useAuthStore = create<AuthStore>()(
         }
       },
 
-      logout: () => {
+      logout: async () => {
+        await authService.logout();
         set({
           user: null,
           isAuthenticated: false,
