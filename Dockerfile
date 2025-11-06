@@ -12,6 +12,7 @@ RUN npm install
 
 # Step 5: Copy the rest of the application files
 COPY . .
+COPY env.prod .env
 
 # Step 6: Build the project
 RUN npm run build
