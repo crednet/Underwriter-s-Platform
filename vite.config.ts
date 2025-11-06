@@ -47,6 +47,6 @@ export default defineConfig({
     host: '0.0.0.0',  // Expose to all network interfaces
   },
   preview: {
-    allowedHosts: ['underwriter.uat.credpalapp.dev', 'underwriter.host1.credpalapp.dev'],  // Add allowed hosts here
+    allowedHosts: ['underwriter.host1.credpalapp.dev'],  // Add allowed hosts here
   },
 });
