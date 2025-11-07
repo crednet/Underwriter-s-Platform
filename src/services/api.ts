@@ -35,10 +35,12 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
-    if (error.response?.status === 401) {
-      // Unauthorized - clear token and redirect to login
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      // Unauthorized or Forbidden - clear token and redirect to login
       localStorage.removeItem("auth_token");
       localStorage.removeItem("auth_user");
+      localStorage.removeItem("user_permissions");
+      localStorage.removeItem("user_roles");
       window.location.href = "/login";
     }
     return Promise.reject(error);
