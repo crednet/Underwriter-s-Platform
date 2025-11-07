@@ -1,8 +1,7 @@
 import axios, { type AxiosInstance, AxiosError } from "axios";
 
 // Selfie API Configuration
-const SELFIE_API_BASE_URL =
-  import.meta.env.VITE_SELFIE_API_BASE_URL ;
+const SELFIE_API_BASE_URL = import.meta.env.VITE_SELFIE_API_BASE_URL;
 
 // Create separate axios instance for Selfie API
 const selfieApiClient: AxiosInstance = axios.create({
@@ -78,12 +77,14 @@ export interface SelfiesResponse {
 export interface SelfieQueryParams {
   page?: number;
   limit?: number;
+  userId?: string;
+  bvn?: string;
 }
 
 // Selfie Service
 export const selfieService = {
   /**
-   * Get all selfie verification records with pagination
+   * Get all selfie verification records with pagination and optional search
    */
   getAllRecords: async (
     params?: SelfieQueryParams
@@ -97,6 +98,12 @@ export const selfieService = {
       if (params?.limit) {
         queryParams.append("limit", params.limit.toString());
       }
+      if (params?.userId) {
+        queryParams.append("userId", params.userId);
+      }
+      if (params?.bvn) {
+        queryParams.append("bvn", params.bvn);
+      }
 
       const queryString = queryParams.toString();
       const url = queryString
@@ -108,16 +115,20 @@ export const selfieService = {
         .then((res) => res.data);
 
       return response;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Selfie fetch error:", error);
 
-      if (error.response?.data?.message) {
-        throw new Error(error.response.data.message);
-      } else if (error.message) {
-        throw new Error(error.message);
-      } else {
-        throw new Error("Failed to fetch selfie records");
+      const axiosError = error as AxiosError;
+      if (axiosError.response?.data) {
+        const data = axiosError.response.data as { message?: string };
+        if (data.message) {
+          throw new Error(data.message);
+        }
       }
+      if (axiosError.message) {
+        throw new Error(axiosError.message);
+      }
+      throw new Error("Failed to fetch selfie records");
     }
   },
 
@@ -131,4 +142,3 @@ export const selfieService = {
     return selfieService.getAllRecords({ page, limit });
   },
 };
-

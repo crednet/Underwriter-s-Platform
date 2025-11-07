@@ -8,31 +8,61 @@ export const SelfiePage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [totalRecords, setTotalRecords] = useState(0);
-  const [limit] = useState(12);
+  const [limit] = useState(100);
   const [error, setError] = useState<string | null>(null);
 
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredRecords, setFilteredRecords] = useState<SelfieRecord[]>([]);
+  const [searchType, setSearchType] = useState<"userId" | "bvn">("bvn");
 
   // Fetch selfie records
-  const fetchSelfieRecords = async (page: number) => {
+  const fetchSelfieRecords = async (page: number, search?: string) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await selfieService.getAllRecords({
+      const params: any = {
         page,
         limit,
-      });
+      };
+
+      // Add search parameter based on search type
+      if (search && search.trim()) {
+        if (searchType === "userId") {
+          params.userId = search.trim();
+        } else {
+          params.bvn = search.trim();
+        }
+      }
+
+      const response = await selfieService.getAllRecords(params);
       setSelfieRecords(response.data.items);
       setCurrentPage(response.data.meta.page);
       setTotalPages(response.data.meta.totalPages);
       setTotalRecords(response.data.meta.total);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to fetch selfie records:", error);
+      const axiosError = error as any;
+
+      // Check for 401/403 errors - these should be handled by the interceptor
+      // but we add this check to ensure proper handling
+      if (
+        axiosError.response?.status === 401 ||
+        axiosError.response?.status === 403
+      ) {
+        console.warn(
+          "Authentication error detected, clearing tokens and redirecting..."
+        );
+        localStorage.removeItem("auth_token");
+        localStorage.removeItem("auth_user");
+        localStorage.removeItem("user_permissions");
+        localStorage.removeItem("user_roles");
+        window.location.href = "/login";
+        return;
+      }
+
       const errorMessage =
-        error.response?.data?.message ||
-        error.message ||
+        axiosError.response?.data?.message ||
+        axiosError.message ||
         "Failed to fetch selfie records. Please try again.";
       setError(errorMessage);
       setSelfieRecords([]);
@@ -46,33 +76,21 @@ export const SelfiePage: React.FC = () => {
     fetchSelfieRecords(1);
   }, []);
 
-  // Filter records based on search query
-  useEffect(() => {
-    if (!searchQuery.trim()) {
-      setFilteredRecords(selfieRecords);
-    } else {
-      const query = searchQuery.toLowerCase().trim();
-      const filtered = selfieRecords.filter((record) =>
-        record.bvn.toLowerCase().includes(query)
-      );
-      setFilteredRecords(filtered);
-    }
-  }, [searchQuery, selfieRecords]);
-
   // Handle page change
   const handlePageChange = (newPage: number) => {
-    setSearchQuery(""); // Clear search when changing pages
-    fetchSelfieRecords(newPage);
+    fetchSelfieRecords(newPage, searchQuery);
   };
 
   // Handle search
   const handleSearch = (query: string) => {
     setSearchQuery(query);
+    fetchSelfieRecords(1, query); // Reset to page 1 when searching
   };
 
   // Handle clear search
   const handleClearSearch = () => {
     setSearchQuery("");
+    fetchSelfieRecords(1); // Reset to page 1 and fetch all records
   };
 
   return (
@@ -98,14 +116,40 @@ export const SelfiePage: React.FC = () => {
       )}
 
       {/* Search Section */}
-      <Card title="Search Records" subtitle="Filter by BVN number">
-        <div className="flex gap-4">
+      <Card title="Search Records" subtitle="Filter by User ID or BVN number">
+        <div className="flex gap-4 flex-wrap">
+          <div className="flex gap-2">
+            <button
+              onClick={() => setSearchType("bvn")}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                searchType === "bvn"
+                  ? "bg-primary-600 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              }`}
+            >
+              Search by BVN
+            </button>
+            <button
+              onClick={() => setSearchType("userId")}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                searchType === "userId"
+                  ? "bg-primary-600 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              }`}
+            >
+              Search by User ID
+            </button>
+          </div>
           <input
             type="text"
-            placeholder="Search by BVN number..."
+            placeholder={
+              searchType === "userId"
+                ? "Enter User ID..."
+                : "Enter BVN number..."
+            }
             value={searchQuery}
             onChange={(e) => handleSearch(e.target.value)}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-w-[200px]"
           />
           <Button
             variant="outline"
@@ -115,11 +159,6 @@ export const SelfiePage: React.FC = () => {
             Clear
           </Button>
         </div>
-        {searchQuery.trim() && (
-          <div className="mt-2 text-sm text-gray-600">
-            Found {filteredRecords.length} of {selfieRecords.length} records
-          </div>
-        )}
       </Card>
 
       {/* Selfie Grid */}
@@ -136,19 +175,17 @@ export const SelfiePage: React.FC = () => {
           </div>
         ) : selfieRecords.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-500">No selfie records found</p>
-          </div>
-        ) : filteredRecords.length === 0 ? (
-          <div className="text-center py-12">
             <p className="text-gray-500">
-              No records match "{searchQuery}". Try a different BVN number.
+              {searchQuery.trim()
+                ? `No records match "${searchQuery}". Try a different search.`
+                : "No selfie records found"}
             </p>
           </div>
         ) : (
           <>
             {/* Grid Layout */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {filteredRecords.map((record) => (
+              {selfieRecords.map((record) => (
                 <div
                   key={record.id}
                   className="group relative bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
@@ -183,7 +220,7 @@ export const SelfiePage: React.FC = () => {
                       {record.bvn}
                     </p>
                     <p className="text-xs text-gray-500 mt-1">
-                      ID: {record.id}
+                      User: {record.userId}
                     </p>
                     <p className="text-xs text-gray-400 mt-1">
                       {new Date(record.createdAt).toLocaleDateString()}
@@ -196,25 +233,14 @@ export const SelfiePage: React.FC = () => {
             {/* Pagination */}
             <div className="mt-6 flex items-center justify-between border-t border-gray-200 pt-4">
               <div className="text-sm text-gray-600">
-                {searchQuery.trim() ? (
-                  <>
-                    Showing {filteredRecords.length} of {selfieRecords.length}{" "}
-                    records
-                  </>
-                ) : (
-                  <>
-                    Page {currentPage} of {totalPages} (
-                    {totalRecords.toLocaleString()} total)
-                  </>
-                )}
+                Page {currentPage} of {totalPages} (
+                {totalRecords.toLocaleString()} total)
               </div>
               <div className="flex gap-2">
                 <Button
                   variant="outline"
                   onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={
-                    currentPage === 1 || loading || searchQuery.trim() !== ""
-                  }
+                  disabled={currentPage === 1 || loading}
                 >
                   Previous
                 </Button>
@@ -230,19 +256,14 @@ export const SelfiePage: React.FC = () => {
                         handlePageChange(page);
                       }
                     }}
-                    disabled={searchQuery.trim() !== ""}
-                    className="w-16 px-2 py-1 border border-gray-300 rounded text-center text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    className="w-16 px-2 py-1 border border-gray-300 rounded text-center text-sm"
                   />
                   <span className="text-sm text-gray-600">/ {totalPages}</span>
                 </div>
                 <Button
                   variant="outline"
                   onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={
-                    currentPage === totalPages ||
-                    loading ||
-                    searchQuery.trim() !== ""
-                  }
+                  disabled={currentPage === totalPages || loading}
                 >
                   Next
                 </Button>

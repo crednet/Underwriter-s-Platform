@@ -9,7 +9,7 @@ export const BVNPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [totalRecords, setTotalRecords] = useState(0);
-  const [limit] = useState(10);
+  const [limit] = useState(100);
 
   // Direct BVN lookup state
   const [directBVN, setDirectBVN] = useState("");
@@ -39,6 +39,7 @@ export const BVNPage: React.FC = () => {
       setTotalRecords(response.meta.totalRecords);
     } catch (error: any) {
       console.error("Failed to fetch BVN records:", error);
+
       const errorMessage =
         error.response?.data?.message ||
         error.message ||
@@ -87,8 +88,6 @@ export const BVNPage: React.FC = () => {
           errorMessage = "BVN details not found.";
         } else if (status === 400) {
           errorMessage = serverMessage || "Invalid request. Please try again.";
-        } else if (status === 401 || status === 403) {
-          errorMessage = "Authentication failed. Please login again.";
         } else if (serverMessage) {
           errorMessage = serverMessage;
         }
@@ -148,8 +147,6 @@ export const BVNPage: React.FC = () => {
         } else if (status === 400) {
           errorMessage =
             serverMessage || "Invalid BVN format. Please check and try again.";
-        } else if (status === 401 || status === 403) {
-          errorMessage = "Authentication failed. Please login again.";
         } else if (serverMessage) {
           errorMessage = serverMessage;
         }
