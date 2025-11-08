@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Card, Alert } from "../components/ui";
-import { formatCurrency } from "../utils";
+// import { formatCurrency } from "../utils";
 import { creditApplicationService, type CreditApplication } from "../services";
 
 export const DashboardPage: React.FC = () => {
