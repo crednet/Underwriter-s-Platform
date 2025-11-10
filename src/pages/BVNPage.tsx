@@ -10,6 +10,7 @@ export const BVNPage: React.FC = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [totalRecords, setTotalRecords] = useState(0);
   const [limit] = useState(100);
+  const [pageInputValue, setPageInputValue] = useState("1");
 
   // Direct BVN lookup state
   const [directBVN, setDirectBVN] = useState("");
@@ -28,13 +29,17 @@ export const BVNPage: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
+      console.log("Fetching BVN records with params:", { page, limit, search });
       const response = await bvnService.getAllRecords({
         page,
         limit,
         search: search || undefined,
       });
       setBvnRecords(response.data);
+      console.log("API Response meta:", response.meta);
+      console.log("Setting currentPage to:", response.meta.currentPage);
       setCurrentPage(response.meta.currentPage);
+      setPageInputValue(response.meta.currentPage.toString());
       setTotalPages(response.meta.totalPages);
       setTotalRecords(response.meta.totalRecords);
     } catch (error: any) {
@@ -63,7 +68,10 @@ export const BVNPage: React.FC = () => {
 
   // Handle pagination
   const handlePageChange = (newPage: number) => {
-    fetchBVNRecords(newPage, searchQuery);
+    console.log("Changing to page:", newPage, "Current page:", currentPage);
+    if (newPage > 0 && newPage <= totalPages && newPage !== currentPage) {
+      fetchBVNRecords(newPage, searchQuery);
+    }
   };
 
   // Handle view details
@@ -287,6 +295,9 @@ export const BVNPage: React.FC = () => {
                   Marital Status
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Date Added
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
@@ -295,7 +306,7 @@ export const BVNPage: React.FC = () => {
               {loading ? (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={8}
                     className="px-6 py-12 text-center text-gray-500"
                   >
                     Loading BVN records...
@@ -304,7 +315,7 @@ export const BVNPage: React.FC = () => {
               ) : bvnRecords.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={8}
                     className="px-6 py-12 text-center text-gray-500"
                   >
                     No BVN records found. Try adjusting your search.
@@ -330,6 +341,13 @@ export const BVNPage: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {record.maritalStatus}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {record.createdAt
+                        ? new Date(record.createdAt).toLocaleDateString()
+                        : record.registrationDate
+                        ? new Date(record.registrationDate).toLocaleDateString()
+                        : "N/A"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <Button
@@ -366,11 +384,36 @@ export const BVNPage: React.FC = () => {
                 <span className="text-sm text-gray-700">Page</span>
                 <Input
                   type="number"
-                  value={currentPage}
+                  value={pageInputValue}
                   onChange={(e) => {
-                    const page = parseInt(e.target.value);
-                    if (page > 0 && page <= totalPages) {
+                    const value = e.target.value;
+                    setPageInputValue(value);
+                  }}
+                  onKeyDown={(e) => {
+                    // Handle Enter key
+                    if (e.key === "Enter") {
+                      const page = parseInt(pageInputValue, 10);
+                      if (!isNaN(page) && page > 0 && page <= totalPages) {
+                        handlePageChange(page);
+                      } else {
+                        // Reset to current page if invalid
+                        setPageInputValue(currentPage.toString());
+                      }
+                    }
+                  }}
+                  onBlur={() => {
+                    // Handle when user clicks away
+                    if (pageInputValue === "") {
+                      // Reset to current page if empty
+                      setPageInputValue(currentPage.toString());
+                      return;
+                    }
+                    const page = parseInt(pageInputValue, 10);
+                    if (!isNaN(page) && page > 0 && page <= totalPages) {
                       handlePageChange(page);
+                    } else {
+                      // Reset to current page if invalid
+                      setPageInputValue(currentPage.toString());
                     }
                   }}
                   className="w-20 text-center"
