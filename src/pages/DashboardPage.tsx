@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { Card, Alert } from "../components/ui";
-// import { formatCurrency } from "../utils";
 import { creditApplicationService, type CreditApplication } from "../services";
 
 export const DashboardPage: React.FC = () => {
@@ -113,23 +112,6 @@ export const DashboardPage: React.FC = () => {
       } catch (error: unknown) {
         console.error("Failed to fetch dashboard data:", error);
         const axiosError = error as any;
-
-        // Check for 401/403 errors - these should be handled by the interceptor
-        // but we add this check to ensure proper handling
-        if (
-          axiosError.response?.status === 401 ||
-          axiosError.response?.status === 403
-        ) {
-          console.warn(
-            "Authentication error detected, clearing tokens and redirecting..."
-          );
-          localStorage.removeItem("auth_token");
-          localStorage.removeItem("auth_user");
-          localStorage.removeItem("user_permissions");
-          localStorage.removeItem("user_roles");
-          window.location.href = "/login";
-          return;
-        }
 
         const errorMessage =
           axiosError.response?.data?.message ||

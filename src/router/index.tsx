@@ -1,9 +1,9 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { useAuthStore } from '../store';
-import { ProtectedRoute } from '../components/auth';
-import { MainLayout } from '../components/layout';
-import { ROUTES } from '../constants';
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useAuthStore } from "../store";
+import { ProtectedRoute } from "../components/auth";
+import { MainLayout } from "../components/layout";
+import { ROUTES } from "../constants";
 import {
   LoginPage,
   DashboardPage,
@@ -13,12 +13,13 @@ import {
   BankStatementPage,
   ApplicationsPage,
   ApplicationDetailsPage,
+  UserProfilePage,
   AuditPage,
-} from '../pages';
+} from "../pages";
 
 const AppRouter: React.FC = () => {
   const { isAuthenticated } = useAuthStore();
-  
+
   return (
     <BrowserRouter>
       <Routes>
@@ -26,10 +27,14 @@ const AppRouter: React.FC = () => {
         <Route
           path={ROUTES.LOGIN}
           element={
-            isAuthenticated ? <Navigate to={ROUTES.DASHBOARD} replace /> : <LoginPage />
+            isAuthenticated ? (
+              <Navigate to={ROUTES.DASHBOARD} replace />
+            ) : (
+              <LoginPage />
+            )
           }
         />
-        
+
         {/* Protected Routes */}
         <Route
           path={ROUTES.DASHBOARD}
@@ -41,7 +46,7 @@ const AppRouter: React.FC = () => {
             </ProtectedRoute>
           }
         />
-        
+
         <Route
           path={ROUTES.APPLICATIONS}
           element={
@@ -52,7 +57,7 @@ const AppRouter: React.FC = () => {
             </ProtectedRoute>
           }
         />
-        
+
         <Route
           path={ROUTES.APPLICATION_DETAILS}
           element={
@@ -63,7 +68,18 @@ const AppRouter: React.FC = () => {
             </ProtectedRoute>
           }
         />
-        
+
+        <Route
+          path={ROUTES.USER_PROFILE}
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <UserProfilePage />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+
         <Route
           path={ROUTES.BVN}
           element={
@@ -74,7 +90,7 @@ const AppRouter: React.FC = () => {
             </ProtectedRoute>
           }
         />
-        
+
         <Route
           path={ROUTES.SELFIE}
           element={
@@ -85,7 +101,7 @@ const AppRouter: React.FC = () => {
             </ProtectedRoute>
           }
         />
-        
+
         <Route
           path={ROUTES.LOCATION}
           element={
@@ -96,7 +112,7 @@ const AppRouter: React.FC = () => {
             </ProtectedRoute>
           }
         />
-        
+
         <Route
           path={ROUTES.BANK_STATEMENT}
           element={
@@ -107,23 +123,26 @@ const AppRouter: React.FC = () => {
             </ProtectedRoute>
           }
         />
-        
+
         <Route
           path={ROUTES.AUDIT}
           element={
-            <ProtectedRoute requiredRoles={['ADMIN', 'SENIOR_UNDERWRITER']}>
+            <ProtectedRoute requiredRoles={["ADMIN", "SENIOR_UNDERWRITER"]}>
               <MainLayout>
                 <AuditPage />
               </MainLayout>
             </ProtectedRoute>
           }
         />
-        
+
         {/* Catch all - redirect to dashboard or login */}
         <Route
           path="*"
           element={
-            <Navigate to={isAuthenticated ? ROUTES.DASHBOARD : ROUTES.LOGIN} replace />
+            <Navigate
+              to={isAuthenticated ? ROUTES.DASHBOARD : ROUTES.LOGIN}
+              replace
+            />
           }
         />
       </Routes>
@@ -132,4 +151,3 @@ const AppRouter: React.FC = () => {
 };
 
 export default AppRouter;
-

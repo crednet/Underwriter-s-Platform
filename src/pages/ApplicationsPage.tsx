@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, Button, Alert, Modal } from "../components/ui";
 import { creditApplicationService, type CreditApplication } from "../services";
+import { getUserProfileRoute } from "../constants/routes";
 
 export const ApplicationsPage: React.FC = () => {
+  const navigate = useNavigate();
   const [applications, setApplications] = useState<CreditApplication[]>([]);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -415,13 +418,25 @@ export const ApplicationsPage: React.FC = () => {
                         {new Date(app.createdAt).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 text-sm">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleViewDetails(app.id)}
-                        >
-                          View Details
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleViewDetails(app.id)}
+                          >
+                            View Details
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              navigate(getUserProfileRoute(app.userId))
+                            }
+                            className="bg-blue-50 border-blue-200 text-blue-800 hover:bg-blue-100"
+                          >
+                            View Profile
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))}

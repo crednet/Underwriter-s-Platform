@@ -51,6 +51,9 @@ export interface BVNRecord {
   gender: string;
   email: string;
   maritalStatus: string;
+  createdAt?: string;
+  updatedAt?: string;
+  registrationDate?: string;
 }
 
 export interface BVNDetailRecord {
