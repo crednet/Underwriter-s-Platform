@@ -10,7 +10,6 @@ export const BVNPage: React.FC = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [totalRecords, setTotalRecords] = useState(0);
   const [limit] = useState(100);
-  const [pageInputValue, setPageInputValue] = useState("1");
 
   // Direct BVN lookup state
   const [directBVN, setDirectBVN] = useState("");
@@ -38,10 +37,9 @@ export const BVNPage: React.FC = () => {
       setBvnRecords(response.data);
       console.log("API Response meta:", response.meta);
       console.log("Setting currentPage to:", response.meta.currentPage);
-      setCurrentPage(response.meta.currentPage);
-      setPageInputValue(response.meta.currentPage.toString());
-      setTotalPages(response.meta.totalPages);
-      setTotalRecords(response.meta.totalRecords);
+      setCurrentPage(Number(response.meta.currentPage));
+      setTotalPages(Number(response.meta.totalPages));
+      setTotalRecords(Number(response.meta.totalRecords));
     } catch (error: any) {
       console.error("Failed to fetch BVN records:", error);
 
@@ -375,58 +373,30 @@ export const BVNPage: React.FC = () => {
             <div className="flex gap-2">
               <Button
                 variant="outline"
-                onClick={() => handlePageChange(currentPage - 1)}
+                onClick={() => handlePageChange(Number(currentPage) - 1)}
                 disabled={currentPage === 1 || loading}
               >
                 Previous
               </Button>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-700">Page</span>
-                <Input
+                <input
                   type="number"
-                  value={pageInputValue}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setPageInputValue(value);
-                  }}
-                  onKeyDown={(e) => {
-                    // Handle Enter key
-                    if (e.key === "Enter") {
-                      const page = parseInt(pageInputValue, 10);
-                      if (!isNaN(page) && page > 0 && page <= totalPages) {
-                        handlePageChange(page);
-                      } else {
-                        // Reset to current page if invalid
-                        setPageInputValue(currentPage.toString());
-                      }
-                    }
-                  }}
-                  onBlur={() => {
-                    // Handle when user clicks away
-                    if (pageInputValue === "") {
-                      // Reset to current page if empty
-                      setPageInputValue(currentPage.toString());
-                      return;
-                    }
-                    const page = parseInt(pageInputValue, 10);
-                    if (!isNaN(page) && page > 0 && page <= totalPages) {
-                      handlePageChange(page);
-                    } else {
-                      // Reset to current page if invalid
-                      setPageInputValue(currentPage.toString());
-                    }
-                  }}
-                  className="w-20 text-center"
-                  min={1}
+                  min="1"
                   max={totalPages}
+                  value={currentPage}
+                  onChange={(e) => {
+                    const page = parseInt(e.target.value);
+                    if (page >= 1 && page <= totalPages) {
+                      handlePageChange(page);
+                    }
+                  }}
+                  className="w-16 px-2 py-1 border border-gray-300 rounded text-center text-sm [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
                 />
-                <span className="text-sm text-gray-700">
-                  of {totalPages.toLocaleString()}
-                </span>
+                <span className="text-sm text-gray-600">/ {totalPages}</span>
               </div>
               <Button
                 variant="outline"
-                onClick={() => handlePageChange(currentPage + 1)}
+                onClick={() => handlePageChange(Number(currentPage) + 1)}
                 disabled={currentPage === totalPages || loading}
               >
                 Next
