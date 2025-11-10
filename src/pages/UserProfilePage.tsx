@@ -82,9 +82,6 @@ export const UserProfilePage: React.FC = () => {
     setModalImage({ isOpen: false, imageUrl: "", title: "" });
   };
 
-  // Active tab state
-  const [activeTab, setActiveTab] = useState<string>("profile");
-
   // Fetch all user data in a single API call
   const fetchUserData = async () => {
     if (!userId) return;
@@ -113,11 +110,6 @@ export const UserProfilePage: React.FC = () => {
   useEffect(() => {
     fetchUserData();
   }, [userId]);
-
-  // Handle tab change
-  const handleTabChange = (tab: string) => {
-    setActiveTab(tab);
-  };
 
   // Handle approve user decision
   const handleApproveUser = () => {
@@ -233,221 +225,415 @@ export const UserProfilePage: React.FC = () => {
           </div>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="border-b border-gray-200 mb-8">
-          <nav className="-mb-px flex space-x-8">
-            {[
-              { id: "profile", label: "Profile", count: userProfile ? 1 : 0 },
-              { id: "documents", label: "Documents", count: documents.length },
-              { id: "selfies", label: "Selfies", count: selfies.length },
-              { id: "bvn", label: "BVN Data", count: bvnData ? 1 : 0 },
-              {
-                id: "card-account",
-                label: "Card Account",
-                count: cardAccount ? 1 : 0,
-              },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => handleTabChange(tab.id)}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === tab.id
-                    ? "border-blue-500 text-blue-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}
-              >
-                {tab.label}
-                {tab.count > 0 && (
-                  <span className="ml-2 bg-gray-100 text-gray-900 py-0.5 px-2 rounded-full text-xs">
-                    {tab.count}
-                  </span>
-                )}
-              </button>
-            ))}
-          </nav>
-        </div>
+        {/* All Sections - Vertical Layout */}
+        <div className="space-y-8">
+          {/* Profile Section */}
+          <div>
+            {userProfile && userProfileDetails ? (
+              <Card className="p-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-6 border-b border-gray-200 pb-3">
+                  User Profile
+                </h2>
+                <div className="space-y-4">
+                  {/* Name Fields - Separate */}
+                  <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                    <span className="text-sm font-medium text-gray-600">
+                      Name
+                    </span>
+                    <span className="font-medium text-gray-900">
+                      {userProfile.name}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                    <span className="text-sm font-medium text-gray-600">
+                      Last Name
+                    </span>
+                    <span className="font-medium text-gray-900">
+                      {userProfile.lastName}
+                    </span>
+                  </div>
 
-        {/* Tab Content */}
-        <div className="space-y-6">
-          {/* Profile Tab */}
-          {activeTab === "profile" && (
-            <div>
-              {userProfile && userProfileDetails ? (
-                <Card className="p-6">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-6">
-                    User Profile
+                  {/* Basic Information */}
+                  <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                    <span className="text-sm font-medium text-gray-600">
+                      Email
+                    </span>
+                    <span className="font-medium text-gray-900">
+                      {userProfile.email}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                    <span className="text-sm font-medium text-gray-600">
+                      Phone Number
+                    </span>
+                    <span className="font-medium text-gray-900">
+                      {userProfile.phoneNo}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                    <span className="text-sm font-medium text-gray-600">
+                      User ID
+                    </span>
+                    <span className="font-medium text-gray-900">
+                      {userProfile.id}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                    <span className="text-sm font-medium text-gray-600">
+                      Date of Birth
+                    </span>
+                    <span className="font-medium text-gray-900">
+                      {new Date(
+                        userProfileDetails.dateOfBirth
+                      ).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                    <span className="text-sm font-medium text-gray-600">
+                      BVN
+                    </span>
+                    <span className="font-medium text-gray-900">
+                      {userProfileDetails.bvn}
+                    </span>
+                  </div>
+
+                  {/* Account Status */}
+                  <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                    <span className="text-sm font-medium text-gray-600">
+                      Status
+                    </span>
+                    <span
+                      className={`px-3 py-1 rounded-full text-sm font-medium ${
+                        userProfile.status === "processed"
+                          ? "bg-green-100 text-green-800"
+                          : userProfile.status === "pending"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-gray-100 text-gray-800"
+                      }`}
+                    >
+                      {userProfile.status}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                    <span className="text-sm font-medium text-gray-600">
+                      Blacklisted
+                    </span>
+                    <span
+                      className={`px-3 py-1 rounded-full text-sm font-medium ${
+                        userProfile.isBlacklisted
+                          ? "bg-red-100 text-red-800"
+                          : "bg-green-100 text-green-800"
+                      }`}
+                    >
+                      {userProfile.isBlacklisted ? "Yes" : "No"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                    <span className="text-sm font-medium text-gray-600">
+                      Source
+                    </span>
+                    <span className="font-medium text-gray-900">
+                      {userProfile.source}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                    <span className="text-sm font-medium text-gray-600">
+                      Operating System
+                    </span>
+                    <span className="font-medium text-gray-900">
+                      {userProfile.operatingSystem}
+                    </span>
+                  </div>
+
+                  {/* Address Information */}
+                  <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                    <span className="text-sm font-medium text-gray-600">
+                      Address
+                    </span>
+                    <span className="font-medium text-gray-900 text-right max-w-md">
+                      {userProfileDetails.address}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                    <span className="text-sm font-medium text-gray-600">
+                      State
+                    </span>
+                    <span className="font-medium text-gray-900">
+                      {userProfileDetails.state}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                    <span className="text-sm font-medium text-gray-600">
+                      LGA
+                    </span>
+                    <span className="font-medium text-gray-900">
+                      {userProfileDetails.lga}
+                    </span>
+                  </div>
+
+                  {/* Employment Information */}
+                  <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                    <span className="text-sm font-medium text-gray-600">
+                      Employer
+                    </span>
+                    <span className="font-medium text-gray-900">
+                      {userProfileDetails.employer}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                    <span className="text-sm font-medium text-gray-600">
+                      Employment Status
+                    </span>
+                    <span className="font-medium text-gray-900">
+                      {userProfileDetails.employmentStatus}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                    <span className="text-sm font-medium text-gray-600">
+                      Salary
+                    </span>
+                    <span className="font-medium text-gray-900">
+                      ₦{parseInt(userProfileDetails.salary).toLocaleString()}
+                    </span>
+                  </div>
+
+                  {/* Financial Information */}
+                  <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                    <span className="text-sm font-medium text-gray-600">
+                      Credit Limit
+                    </span>
+                    <span className="font-medium text-gray-900">
+                      ₦{userProfileDetails.creditLimit.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                    <span className="text-sm font-medium text-gray-600">
+                      Standard Loan Limit
+                    </span>
+                    <span className="font-medium text-gray-900">
+                      ₦{userProfileDetails.standardLoanLimit.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                    <span className="text-sm font-medium text-gray-600">
+                      Interest Rate
+                    </span>
+                    <span className="font-medium text-gray-900">
+                      {userProfileDetails.standardLoanInterestRate}%
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center py-3">
+                    <span className="text-sm font-medium text-gray-600">
+                      Referral Code
+                    </span>
+                    <span className="font-medium text-gray-900">
+                      {userProfileDetails.referralCode}
+                    </span>
+                  </div>
+                </div>
+              </Card>
+            ) : (
+              <Card className="p-6">
+                <p className="text-gray-500 text-center">
+                  No profile data available
+                </p>
+              </Card>
+            )}
+          </div>
+
+          {/* BVN Data Section */}
+          <div>
+            {bvnData ? (
+              <Card className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-semibold text-gray-900">
+                    BVN Information
                   </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <span
+                    className={`px-3 py-1 rounded-full text-sm font-medium ${
+                      bvnData.watchlisted
+                        ? "bg-red-100 text-red-800"
+                        : "bg-green-100 text-green-800"
+                    }`}
+                  >
+                    {bvnData.watchlisted ? "Watchlisted" : "Clear"}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {bvnData.photoUrl && (
+                    <div className="md:col-span-1">
+                      <p className="text-sm text-gray-600 mb-2">BVN Photo</p>
+                      <div className="w-32 h-32 overflow-hidden rounded-lg bg-gray-100 cursor-pointer hover:opacity-80 transition-opacity">
+                        <img
+                          src={bvnData.photoUrl}
+                          alt="BVN Photo"
+                          className="w-full h-full object-cover"
+                          onClick={() => {
+                            if (
+                              bvnData.photoUrl &&
+                              bvnData.photoUrl !== "/placeholder-image.png"
+                            ) {
+                              openImageModal(bvnData.photoUrl, "BVN Photo");
+                            }
+                          }}
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = "/placeholder-image.png";
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <p className="text-sm text-gray-600">BVN Number</p>
+                      <p className="font-medium text-gray-900">{bvnData.bvn}</p>
+                    </div>
                     <div>
                       <p className="text-sm text-gray-600">Full Name</p>
                       <p className="font-medium text-gray-900">
-                        {userProfile.name} {userProfile.lastName}
+                        {bvnData.firstName} {bvnData.middleName}{" "}
+                        {bvnData.lastName}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-600">Email</p>
+                      <p className="text-sm text-gray-600">Date of Birth</p>
                       <p className="font-medium text-gray-900">
-                        {userProfile.email}
+                        {new Date(bvnData.dateOfBirth).toLocaleDateString()}
                       </p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-600">Phone Number</p>
                       <p className="font-medium text-gray-900">
-                        {userProfile.phoneNo}
+                        {bvnData.phoneNumber1}
+                      </p>
+                    </div>
+                    {bvnData.email && (
+                      <div>
+                        <p className="text-sm text-gray-600">Email</p>
+                        <p className="font-medium text-gray-900">
+                          {bvnData.email}
+                        </p>
+                      </div>
+                    )}
+                    <div>
+                      <p className="text-sm text-gray-600">Gender</p>
+                      <p className="font-medium text-gray-900">
+                        {bvnData.gender}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-600">User ID</p>
+                      <p className="text-sm text-gray-600">State of Origin</p>
                       <p className="font-medium text-gray-900">
-                        {userProfile.id}
+                        {bvnData.stateOfOrigin}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-600">Source</p>
+                      <p className="text-sm text-gray-600">LGA of Origin</p>
                       <p className="font-medium text-gray-900">
-                        {userProfile.source}
+                        {bvnData.lgaOfOrigin}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-600">Status</p>
+                      <p className="text-sm text-gray-600">Marital Status</p>
                       <p className="font-medium text-gray-900">
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs ${
-                            userProfile.status === "processed"
-                              ? "bg-green-100 text-green-800"
-                              : userProfile.status === "pending"
-                              ? "bg-yellow-100 text-yellow-800"
-                              : "bg-gray-100 text-gray-800"
-                          }`}
-                        >
-                          {userProfile.status}
-                        </span>
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Operating System</p>
-                      <p className="font-medium text-gray-900">
-                        {userProfile.operatingSystem}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Blacklisted</p>
-                      <p className="font-medium text-gray-900">
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs ${
-                            userProfile.isBlacklisted
-                              ? "bg-red-100 text-red-800"
-                              : "bg-green-100 text-green-800"
-                          }`}
-                        >
-                          {userProfile.isBlacklisted ? "Yes" : "No"}
-                        </span>
+                        {bvnData.maritalStatus}
                       </p>
                     </div>
                   </div>
+                </div>
+              </Card>
+            ) : (
+              <Card className="p-6">
+                <p className="text-gray-500 text-center">
+                  No BVN data available
+                </p>
+              </Card>
+            )}
+          </div>
 
-                  {/* User Profile Details Section */}
-                  <div className="mt-8">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                      Profile Details
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      <div>
-                        <p className="text-sm text-gray-600">Date of Birth</p>
-                        <p className="font-medium text-gray-900">
-                          {new Date(
-                            userProfileDetails.dateOfBirth
-                          ).toLocaleDateString()}
-                        </p>
+          {/* Selfies Section */}
+          <div>
+            <Card className="p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-6 border-b border-gray-200 pb-3">
+                Selfies ({selfies.length})
+              </h2>
+              {selfies.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {selfies.map((selfie) => (
+                    <Card key={selfie.id} className="p-4">
+                      <div className="aspect-square mb-4 overflow-hidden rounded-lg bg-gray-100 cursor-pointer hover:opacity-80 transition-opacity">
+                        <img
+                          src={selfie.image || "/placeholder-image.png"}
+                          alt="User Selfie"
+                          className="w-full h-full object-cover"
+                          onClick={() => {
+                            if (
+                              selfie.image &&
+                              selfie.image !== "/placeholder-image.png"
+                            ) {
+                              openImageModal(
+                                selfie.image,
+                                `Selfie #${selfie.id}`
+                              );
+                            }
+                          }}
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = "/placeholder-image.png";
+                          }}
+                        />
                       </div>
-                      <div>
-                        <p className="text-sm text-gray-600">BVN</p>
-                        <p className="font-medium text-gray-900">
-                          {userProfileDetails.bvn}
-                        </p>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-600">
+                            Confidence
+                          </span>
+                          <span className="font-medium text-gray-900">
+                            {selfie.response?.confidence
+                              ? selfie.response.confidence.toFixed(1)
+                              : "N/A"}
+                            %
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-600">
+                            Similarity
+                          </span>
+                          <span className="font-medium text-gray-900">
+                            {selfie.response?.similarity
+                              ? selfie.response.similarity.toFixed(1)
+                              : "N/A"}
+                            %
+                          </span>
+                        </div>
+
+                        <div>
+                          <p className="text-sm text-gray-600">Captured</p>
+                          <p className="text-xs text-gray-500">
+                            {new Date(selfie.createdAt).toLocaleString()}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Address</p>
-                        <p className="font-medium text-gray-900">
-                          {userProfileDetails.address}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">State</p>
-                        <p className="font-medium text-gray-900">
-                          {userProfileDetails.state}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">LGA</p>
-                        <p className="font-medium text-gray-900">
-                          {userProfileDetails.lga}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Employer</p>
-                        <p className="font-medium text-gray-900">
-                          {userProfileDetails.employer}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">
-                          Employment Status
-                        </p>
-                        <p className="font-medium text-gray-900">
-                          {userProfileDetails.employmentStatus}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Salary</p>
-                        <p className="font-medium text-gray-900">
-                          ₦
-                          {parseInt(userProfileDetails.salary).toLocaleString()}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Credit Limit</p>
-                        <p className="font-medium text-gray-900">
-                          ₦{userProfileDetails.creditLimit.toLocaleString()}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">
-                          Standard Loan Limit
-                        </p>
-                        <p className="font-medium text-gray-900">
-                          ₦
-                          {userProfileDetails.standardLoanLimit.toLocaleString()}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Interest Rate</p>
-                        <p className="font-medium text-gray-900">
-                          {userProfileDetails.standardLoanInterestRate}%
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Referral Code</p>
-                        <p className="font-medium text-gray-900">
-                          {userProfileDetails.referralCode}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
+                    </Card>
+                  ))}
+                </div>
               ) : (
-                <Card className="p-6">
-                  <p className="text-gray-500 text-center">
-                    No profile data available
-                  </p>
-                </Card>
+                <div className="text-center py-8">
+                  <p className="text-gray-500">No selfies available</p>
+                </div>
               )}
-            </div>
-          )}
+            </Card>
+          </div>
 
-          {/* Documents Tab */}
-          {activeTab === "documents" && (
-            <div>
+          {/* Documents Section */}
+          <div>
+            <Card className="p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-6 border-b border-gray-200 pb-3">
+                Documents ({documents.length})
+              </h2>
               {documents.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {documents.map((doc) => (
@@ -509,311 +695,115 @@ export const UserProfilePage: React.FC = () => {
                   ))}
                 </div>
               ) : (
-                <Card className="p-6">
-                  <p className="text-gray-500 text-center">
-                    No documents available
-                  </p>
-                </Card>
-              )}
-            </div>
-          )}
-
-          {/* Selfies Tab */}
-          {activeTab === "selfies" && (
-            <div>
-              {selfies.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {selfies.map((selfie) => (
-                    <Card key={selfie.id} className="p-4">
-                      <div className="aspect-square mb-4 overflow-hidden rounded-lg bg-gray-100 cursor-pointer hover:opacity-80 transition-opacity">
-                        <img
-                          src={selfie.image || "/placeholder-image.png"}
-                          alt="User Selfie"
-                          className="w-full h-full object-cover"
-                          onClick={() => {
-                            if (
-                              selfie.image &&
-                              selfie.image !== "/placeholder-image.png"
-                            ) {
-                              openImageModal(
-                                selfie.image,
-                                `Selfie #${selfie.id}`
-                              );
-                            }
-                          }}
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = "/placeholder-image.png";
-                          }}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-gray-600">
-                            Confidence
-                          </span>
-                          <span className="font-medium text-gray-900">
-                            {selfie.response?.confidence
-                              ? (selfie.response.confidence * 100).toFixed(1)
-                              : "N/A"}
-                            %
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-gray-600">
-                            Similarity
-                          </span>
-                          <span className="font-medium text-gray-900">
-                            {selfie.response?.similarity
-                              ? (selfie.response.similarity * 100).toFixed(1)
-                              : "N/A"}
-                            %
-                          </span>
-                        </div>
-
-                        <div>
-                          <p className="text-sm text-gray-600">Captured</p>
-                          <p className="text-xs text-gray-500">
-                            {new Date(selfie.createdAt).toLocaleString()}
-                          </p>
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
+                <div className="text-center py-8">
+                  <p className="text-gray-500">No documents available</p>
                 </div>
-              ) : (
-                <Card className="p-6">
-                  <p className="text-gray-500 text-center">
-                    No selfies available
-                  </p>
-                </Card>
               )}
-            </div>
-          )}
+            </Card>
+          </div>
 
-          {/* BVN Data Tab */}
-          {activeTab === "bvn" && (
-            <div>
-              {bvnData ? (
-                <Card className="p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-semibold text-gray-900">
-                      BVN Information
-                    </h2>
+          {/* Card Account Section */}
+          <div>
+            {cardAccount ? (
+              <Card className="p-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                  Personal Card Account
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div>
+                    <p className="text-sm text-gray-600">Account Number</p>
+                    <p className="font-medium text-gray-900">
+                      {cardAccount.accountNo}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Available Balance</p>
+                    <p className="font-medium text-gray-900">
+                      ₦{cardAccount.availableBalance.toLocaleString()}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">BNPL Balance</p>
+                    <p className="font-medium text-gray-900">
+                      ₦{cardAccount.bnplBalance.toLocaleString()}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Credit Card Limit</p>
+                    <p className="font-medium text-gray-900">
+                      ₦{cardAccount.creditCardLimit.toLocaleString()}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Available Credit</p>
+                    <p className="font-medium text-gray-900">
+                      ₦{cardAccount.availableCredit.toLocaleString()}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">
+                      Repayment Percentage
+                    </p>
+                    <p className="font-medium text-gray-900">
+                      {cardAccount.repaymentPercentage}%
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">PIN Status</p>
                     <span
-                      className={`px-3 py-1 rounded-full text-sm font-medium ${
-                        bvnData.watchlisted
-                          ? "bg-red-100 text-red-800"
-                          : "bg-green-100 text-green-800"
+                      className={`px-2 py-1 rounded-full text-xs ${
+                        cardAccount.pinStatus === "active"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
                       }`}
                     >
-                      {bvnData.watchlisted ? "Watchlisted" : "Clear"}
+                      {cardAccount.pinStatus}
                     </span>
                   </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {bvnData.photoUrl && (
-                      <div className="md:col-span-1">
-                        <p className="text-sm text-gray-600 mb-2">BVN Photo</p>
-                        <div className="w-32 h-32 overflow-hidden rounded-lg bg-gray-100 cursor-pointer hover:opacity-80 transition-opacity">
-                          <img
-                            src={bvnData.photoUrl}
-                            alt="BVN Photo"
-                            className="w-full h-full object-cover"
-                            onClick={() => {
-                              if (
-                                bvnData.photoUrl &&
-                                bvnData.photoUrl !== "/placeholder-image.png"
-                              ) {
-                                openImageModal(bvnData.photoUrl, "BVN Photo");
-                              }
-                            }}
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.src = "/placeholder-image.png";
-                            }}
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <p className="text-sm text-gray-600">BVN Number</p>
-                        <p className="font-medium text-gray-900">
-                          {bvnData.bvn}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Full Name</p>
-                        <p className="font-medium text-gray-900">
-                          {bvnData.firstName} {bvnData.middleName}{" "}
-                          {bvnData.lastName}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Date of Birth</p>
-                        <p className="font-medium text-gray-900">
-                          {new Date(bvnData.dateOfBirth).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Phone Number</p>
-                        <p className="font-medium text-gray-900">
-                          {bvnData.phoneNumber1}
-                        </p>
-                      </div>
-                      {bvnData.email && (
-                        <div>
-                          <p className="text-sm text-gray-600">Email</p>
-                          <p className="font-medium text-gray-900">
-                            {bvnData.email}
-                          </p>
-                        </div>
-                      )}
-                      <div>
-                        <p className="text-sm text-gray-600">Gender</p>
-                        <p className="font-medium text-gray-900">
-                          {bvnData.gender}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">State of Origin</p>
-                        <p className="font-medium text-gray-900">
-                          {bvnData.stateOfOrigin}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">LGA of Origin</p>
-                        <p className="font-medium text-gray-900">
-                          {bvnData.lgaOfOrigin}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Marital Status</p>
-                        <p className="font-medium text-gray-900">
-                          {bvnData.maritalStatus}
-                        </p>
-                      </div>
-                    </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Freemium</p>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs ${
+                        cardAccount.freemium
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-800"
+                      }`}
+                    >
+                      {cardAccount.freemium ? "Yes" : "No"}
+                    </span>
                   </div>
-                </Card>
-              ) : (
-                <Card className="p-6">
-                  <p className="text-gray-500 text-center">
-                    No BVN data available
-                  </p>
-                </Card>
-              )}
-            </div>
-          )}
-
-          {/* Card Account Tab */}
-          {activeTab === "card-account" && (
-            <div>
-              {cardAccount ? (
-                <Card className="p-6">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-6">
-                    Personal Card Account
-                  </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div>
-                      <p className="text-sm text-gray-600">Account Number</p>
-                      <p className="font-medium text-gray-900">
-                        {cardAccount.accountNo}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Available Balance</p>
-                      <p className="font-medium text-gray-900">
-                        ₦{cardAccount.availableBalance.toLocaleString()}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">BNPL Balance</p>
-                      <p className="font-medium text-gray-900">
-                        ₦{cardAccount.bnplBalance.toLocaleString()}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Credit Card Limit</p>
-                      <p className="font-medium text-gray-900">
-                        ₦{cardAccount.creditCardLimit.toLocaleString()}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Available Credit</p>
-                      <p className="font-medium text-gray-900">
-                        ₦{cardAccount.availableCredit.toLocaleString()}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">
-                        Repayment Percentage
-                      </p>
-                      <p className="font-medium text-gray-900">
-                        {cardAccount.repaymentPercentage}%
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">PIN Status</p>
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs ${
-                          cardAccount.pinStatus === "active"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {cardAccount.pinStatus}
-                      </span>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Freemium</p>
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs ${
-                          cardAccount.freemium
-                            ? "bg-green-100 text-green-800"
-                            : "bg-gray-100 text-gray-800"
-                        }`}
-                      >
-                        {cardAccount.freemium ? "Yes" : "No"}
-                      </span>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Mandate Status</p>
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs ${
-                          cardAccount.mandateStatus === "active"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {cardAccount.mandateStatus}
-                      </span>
-                    </div>
-                    {cardAccount.freemiumExpireDate && (
-                      <div>
-                        <p className="text-sm text-gray-600">
-                          Freemium Expires
-                        </p>
-                        <p className="font-medium text-gray-900">
-                          {new Date(
-                            cardAccount.freemiumExpireDate
-                          ).toLocaleDateString()}
-                        </p>
-                      </div>
-                    )}
+                  <div>
+                    <p className="text-sm text-gray-600">Mandate Status</p>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs ${
+                        cardAccount.mandateStatus === "active"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {cardAccount.mandateStatus}
+                    </span>
                   </div>
-                </Card>
-              ) : (
-                <Card className="p-6">
-                  <p className="text-gray-500 text-center">
-                    No card account available
-                  </p>
-                </Card>
-              )}
-            </div>
-          )}
+                  {cardAccount.freemiumExpireDate && (
+                    <div>
+                      <p className="text-sm text-gray-600">Freemium Expires</p>
+                      <p className="font-medium text-gray-900">
+                        {new Date(
+                          cardAccount.freemiumExpireDate
+                        ).toLocaleDateString()}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </Card>
+            ) : (
+              <Card className="p-6">
+                <p className="text-gray-500 text-center">
+                  No card account available
+                </p>
+              </Card>
+            )}
+          </div>
         </div>
       </div>
 
