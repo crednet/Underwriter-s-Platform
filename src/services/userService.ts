@@ -297,6 +297,181 @@ export interface UserCompleteDetailsResponse {
   message: string;
 }
 
+// Loan Analysis Types
+export interface Statement {
+  id: string;
+  pTransactionDate: string;
+  pValueDate: string;
+  pNarration: string;
+  pCredit: string;
+  pDebit: string;
+  pBalance: string;
+  statementId: string;
+}
+
+export interface CreditAnalysis {
+  totalLoansCount: number;
+  closedLoansCount: number;
+  performingLoansCount: number;
+  hasNonPerformingLoans: boolean;
+}
+
+export interface Decision {
+  id: string;
+  decisionType: string;
+  decisionSource: string;
+  loanBotStatus: string;
+  approvedAmount?: string;
+  recommendedLimit?: string;
+  calcMonthlyIncome?: string;
+  accountHolder?: string;
+  accountNumber?: string;
+  referenceNumber?: string;
+  reportedSalary?: string;
+  employmentType?: string;
+  creditCardLimit?: string;
+  shoppingLimit?: string;
+  creditAnalysis?: CreditAnalysis;
+  metadata?: {
+    statementId?: string;
+  };
+}
+
+export interface LoanPerformance {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  accountNumber: string;
+  loanProvider: string;
+  loanAmount: number;
+  outstandingBalance: number;
+  overdueAmount: number;
+  noOfPerforming: number;
+  noOfNonPerforming: number;
+  loanCount: number;
+  performanceStatus: string;
+  status: string;
+}
+
+export interface CreditReportScore {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  creditReportId: string;
+  totalNoOfDelinquentFacilities: number;
+  totalNoOfLoans: number;
+  totalNoOfActiveLoans: number;
+  totalNoOfClosedLoans: number;
+  maxNoOfDays: number;
+  totalNoOfInstitutions: number;
+  totalOverdue: number;
+  totalBorrowed: number;
+  highestLoanAmount: number;
+  totalOutstanding: number;
+  totalMonthlyInstallment: number;
+  totalNoOfOverdueAccounts: number;
+  totalNoOfPerformingLoans: number;
+  firstCentralEnquiryResultID: string | null;
+  firstCentralEnquiryEngineID: string | null;
+  searchedDate: string;
+  performingLoanCount: number | null;
+  nonPerformingLoanCount: number | null;
+  closedLoansCount: number | null;
+  openLoansCount: number | null;
+  recencyDays: number | null;
+  averageDebitService: number | null;
+  debitService: number | null;
+  averageDefault: number | null;
+}
+
+export interface CreditReport {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  userId: string | null;
+  bvn: string;
+  name: string;
+  gender: string;
+  dateOfBirth: string;
+  address: string;
+  phone: string;
+  email: string;
+  status: string | null;
+  scores: CreditReportScore[];
+}
+
+export interface CreditScore {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  creditReportId: string;
+  loanPerformances: LoanPerformance[];
+}
+
+export interface LoanAnalysisData {
+  userId: string;
+  statements: Statement[];
+  decisions: Decision[];
+  creditReport: CreditReport | null;
+  creditScores: CreditScore[];
+  summary: {
+    totalStatements: number;
+    totalDecisions: number;
+    hasCreditReport: boolean;
+    totalCreditScores: number;
+    bvn: string | null;
+  };
+}
+
+export interface LoanAnalysisResponse {
+  data: LoanAnalysisData;
+  message: string;
+}
+
+// Create separate axios instance for Loan Analysis API (Loan Bot API)
+const loanAnalysisApiClient: AxiosInstance = axios.create({
+  baseURL:
+    import.meta.env.VITE_LOANBOT_BASE_URL || "http://172.16.0.18:7017/api",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  timeout: 30000,
+});
+
+// Request interceptor to add auth token
+loanAnalysisApiClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("auth_token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Response interceptor for error handling
+loanAnalysisApiClient.interceptors.response.use(
+  (response) => response,
+  (error: AxiosError) => {
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      // Unauthorized or Forbidden - clear token and redirect to login
+      localStorage.removeItem("auth_token");
+      localStorage.removeItem("auth_user");
+      localStorage.removeItem("user_permissions");
+      localStorage.removeItem("user_roles");
+      window.location.href = "/login";
+    }
+    return Promise.reject(error);
+  }
+);
+
 // User Service
 export const userService = {
   /**
@@ -326,6 +501,34 @@ export const userService = {
         throw new Error(axiosError.message);
       }
       throw new Error("Failed to fetch user complete details");
+    }
+  },
+
+  /**
+   * Get loan analysis data for a user (decisions, statements, credit report, scores)
+   */
+  getUserLoanAnalysis: async (
+    userId: string
+  ): Promise<LoanAnalysisResponse> => {
+    try {
+      const response = await loanAnalysisApiClient
+        .get<LoanAnalysisResponse>(`/admin/users/${userId}`)
+        .then((res) => res.data);
+
+      return response;
+    } catch (error: unknown) {
+      console.error("Loan analysis fetch error:", error);
+      const axiosError = error as AxiosError;
+      if (axiosError.response?.data) {
+        const data = axiosError.response.data as { message?: string };
+        if (data.message) {
+          throw new Error(data.message);
+        }
+      }
+      if (axiosError.message) {
+        throw new Error(axiosError.message);
+      }
+      throw new Error("Failed to fetch loan analysis data");
     }
   },
 };
