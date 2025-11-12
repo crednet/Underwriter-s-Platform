@@ -2,7 +2,7 @@ import axios, { type AxiosInstance, AxiosError } from "axios";
 
 // BVN API Configuration
 const BVN_API_BASE_URL =
-  import.meta.env.VITE_BVN_API_BASE_URL || "http://172.16.0.18:7010";
+  import.meta.env.VITE_BVN_API_BASE_URL || "http://172.16.0.18:7010/api";
 
 // Create separate axios instance for BVN API
 const bvnApiClient: AxiosInstance = axios.create({
