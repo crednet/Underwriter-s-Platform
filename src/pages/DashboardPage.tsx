@@ -61,7 +61,9 @@ export const DashboardPage: React.FC = () => {
           (app) => app.creditReportStatus === "pending"
         ).length;
         const approved = applications.filter(
-          (app) => app.creditReportStatus === "approved"
+          (app) =>
+            app.creditReportStatus === "approved" ||
+            app.creditReportStatus === "auto_approved"
         ).length;
         const rejected = applications.filter(
           (app) => app.creditReportStatus === "not_approved"
@@ -110,7 +112,6 @@ export const DashboardPage: React.FC = () => {
         });
         setRecentApplications(recent.data.items);
       } catch (error: unknown) {
-        console.error("Failed to fetch dashboard data:", error);
         const axiosError = error as any;
 
         const errorMessage =
@@ -130,6 +131,7 @@ export const DashboardPage: React.FC = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "approved":
+      case "auto_approved":
         return "bg-green-100 text-green-800";
       case "pending":
         return "bg-yellow-100 text-yellow-800";

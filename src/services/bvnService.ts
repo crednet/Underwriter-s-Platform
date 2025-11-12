@@ -146,8 +146,6 @@ export const bvnService = {
 
       return response;
     } catch (error: any) {
-      console.error("BVN fetch error:", error);
-
       if (error.response?.data?.message) {
         throw new Error(error.response.data.message);
       } else if (error.message) {
@@ -190,8 +188,6 @@ export const bvnService = {
 
       return response;
     } catch (error: any) {
-      console.error("BVN details fetch error:", error);
-
       if (error.response?.data?.message) {
         throw new Error(error.response.data.message);
       } else if (error.message) {

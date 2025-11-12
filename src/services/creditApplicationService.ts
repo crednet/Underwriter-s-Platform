@@ -62,7 +62,7 @@ export interface CreditApplication {
   accountNameMatch: boolean;
   hasProcessedNameMatch: boolean;
   userNameMatch: boolean;
-  creditReportStatus: "pending" | "approved" | "not_approved";
+  creditReportStatus: "pending" | "approved" | "auto_approved" | "not_approved";
   reason: string | null;
   creditReportReason: string | null;
   statementRequestReference: string | null;
@@ -123,6 +123,11 @@ export interface ReviewLimitResponse {
   message: string;
 }
 
+export interface EditUserNameResponse {
+  data: any;
+  message: string;
+}
+
 // Credit Applications Service
 export const creditApplicationService = {
   /**
@@ -167,8 +172,6 @@ export const creditApplicationService = {
 
       return response;
     } catch (error: unknown) {
-      console.error("Credit applications fetch error:", error);
-
       const axiosError = error as AxiosError;
       if (axiosError.response?.data) {
         const data = axiosError.response.data as { message?: string };
@@ -208,8 +211,6 @@ export const creditApplicationService = {
 
       return response;
     } catch (error: unknown) {
-      console.error("Credit application detail fetch error:", error);
-
       const axiosError = error as AxiosError;
       if (axiosError.response?.data) {
         const data = axiosError.response.data as { message?: string };
@@ -241,8 +242,6 @@ export const creditApplicationService = {
 
       return response;
     } catch (error: unknown) {
-      console.error("Decline application error:", error);
-
       const axiosError = error as AxiosError;
       if (axiosError.response?.data) {
         const data = axiosError.response.data as { message?: string };
@@ -274,8 +273,6 @@ export const creditApplicationService = {
 
       return response;
     } catch (error: unknown) {
-      console.error("Approve application error:", error);
-
       const axiosError = error as AxiosError;
       if (axiosError.response?.data) {
         const data = axiosError.response.data as { message?: string };
@@ -308,8 +305,6 @@ export const creditApplicationService = {
 
       return response;
     } catch (error: unknown) {
-      console.error("Review limit error:", error);
-
       const axiosError = error as AxiosError;
       if (axiosError.response?.data) {
         const data = axiosError.response.data as { message?: string };
@@ -321,6 +316,38 @@ export const creditApplicationService = {
         throw new Error(axiosError.message);
       }
       throw new Error("Failed to review credit limit");
+    }
+  },
+
+  /**
+   * Edit a user's name
+   */
+  editUserName: async (
+    userId: string,
+    firstName: string,
+    lastName?: string
+  ): Promise<EditUserNameResponse> => {
+    try {
+      const response = await creditApiClient
+        .post<EditUserNameResponse>(
+          `/admin/credit-applications/edit-user-name/${userId}`,
+          { firstName, lastName }
+        )
+        .then((res) => res.data);
+
+      return response;
+    } catch (error: unknown) {
+      const axiosError = error as AxiosError;
+      if (axiosError.response?.data) {
+        const data = axiosError.response.data as { message?: string };
+        if (data.message) {
+          throw new Error(data.message);
+        }
+      }
+      if (axiosError.message) {
+        throw new Error(axiosError.message);
+      }
+      throw new Error("Failed to edit user name");
     }
   },
 };

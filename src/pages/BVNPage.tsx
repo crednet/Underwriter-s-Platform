@@ -28,21 +28,16 @@ export const BVNPage: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      console.log("Fetching BVN records with params:", { page, limit, search });
       const response = await bvnService.getAllRecords({
         page,
         limit,
         search: search || undefined,
       });
       setBvnRecords(response.data);
-      console.log("API Response meta:", response.meta);
-      console.log("Setting currentPage to:", response.meta.currentPage);
       setCurrentPage(Number(response.meta.currentPage));
       setTotalPages(Number(response.meta.totalPages));
       setTotalRecords(Number(response.meta.totalRecords));
     } catch (error: any) {
-      console.error("Failed to fetch BVN records:", error);
-
       const errorMessage =
         error.response?.data?.message ||
         error.message ||
@@ -66,7 +61,6 @@ export const BVNPage: React.FC = () => {
 
   // Handle pagination
   const handlePageChange = (newPage: number) => {
-    console.log("Changing to page:", newPage, "Current page:", currentPage);
     if (newPage > 0 && newPage <= totalPages && newPage !== currentPage) {
       fetchBVNRecords(newPage, searchQuery);
     }
@@ -81,8 +75,6 @@ export const BVNPage: React.FC = () => {
       const response = await bvnService.getBVNDetails(bvn);
       setSelectedBVN(response.data);
     } catch (error: any) {
-      console.error("Failed to fetch BVN details:", error);
-
       // Handle different error scenarios
       let errorMessage = "Failed to fetch BVN details. Please try again.";
 
@@ -137,8 +129,6 @@ export const BVNPage: React.FC = () => {
       setShowDetailsModal(true);
       setDirectBVN(""); // Clear input on success
     } catch (error: any) {
-      console.error("Failed to lookup BVN:", error);
-
       // Handle different error scenarios
       let errorMessage = "Failed to lookup BVN. Please try again.";
 

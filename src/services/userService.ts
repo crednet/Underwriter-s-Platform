@@ -489,7 +489,6 @@ export const userService = {
 
       return response;
     } catch (error: unknown) {
-      console.error("User complete details fetch error:", error);
       const axiosError = error as AxiosError;
       if (axiosError.response?.data) {
         const data = axiosError.response.data as { message?: string };
@@ -517,7 +516,6 @@ export const userService = {
 
       return response;
     } catch (error: unknown) {
-      console.error("Loan analysis fetch error:", error);
       const axiosError = error as AxiosError;
       if (axiosError.response?.data) {
         const data = axiosError.response.data as { message?: string };
