@@ -40,7 +40,6 @@ export const SelfiePage: React.FC = () => {
       setTotalPages(response.data.meta.totalPages);
       setTotalRecords(response.data.meta.total);
     } catch (error: unknown) {
-      console.error("Failed to fetch selfie records:", error);
       const axiosError = error as any;
 
       // Check for 401/403 errors - these should be handled by the interceptor
@@ -49,9 +48,6 @@ export const SelfiePage: React.FC = () => {
         axiosError.response?.status === 401 ||
         axiosError.response?.status === 403
       ) {
-        console.warn(
-          "Authentication error detected, clearing tokens and redirecting..."
-        );
         localStorage.removeItem("auth_token");
         localStorage.removeItem("auth_user");
         localStorage.removeItem("user_permissions");

@@ -118,8 +118,6 @@ export const selfieService = {
 
       return response;
     } catch (error: unknown) {
-      console.error("Selfie fetch error:", error);
-
       const axiosError = error as AxiosError;
       if (axiosError.response?.data) {
         const data = axiosError.response.data as { message?: string };

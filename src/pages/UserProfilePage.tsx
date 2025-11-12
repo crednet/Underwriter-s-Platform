@@ -104,6 +104,7 @@ export const UserProfilePage: React.FC = () => {
   const [showDeclineModal, setShowDeclineModal] = useState(false);
   const [showApproveModal, setShowApproveModal] = useState(false);
   const [showReviewLimitModal, setShowReviewLimitModal] = useState(false);
+  const [showEditNameModal, setShowEditNameModal] = useState(false);
 
   // Form states
   const [declineReason, setDeclineReason] = useState("");
@@ -112,6 +113,8 @@ export const UserProfilePage: React.FC = () => {
     "increase"
   );
   const [newLimit, setNewLimit] = useState("");
+  const [editFirstName, setEditFirstName] = useState("");
+  const [editLastName, setEditLastName] = useState("");
 
   // Action loading and success states
   const [actionLoading, setActionLoading] = useState(false);
@@ -135,7 +138,6 @@ export const UserProfilePage: React.FC = () => {
       setCardAccount(response.data.personalCardAccounts);
       setBvnData(response.data.bvnData);
     } catch (error: any) {
-      console.error("Failed to fetch user data:", error);
       setError(error.message || "Failed to fetch user data");
     } finally {
       setLoading(false);
@@ -152,7 +154,6 @@ export const UserProfilePage: React.FC = () => {
       const response = await userService.getUserLoanAnalysis(userId);
       setLoanAnalysisData(response.data);
     } catch (error: any) {
-      console.error("Failed to fetch loan analysis data:", error);
       setLoanAnalysisError(
         error.message || "Failed to fetch loan analysis data"
       );
@@ -190,6 +191,15 @@ export const UserProfilePage: React.FC = () => {
     setReviewAction("increase");
     setNewLimit("");
     setShowReviewLimitModal(true);
+  };
+
+  // Handle edit user name
+  const handleEditUserName = () => {
+    setActionSuccess(null);
+    setActionError(null);
+    setEditFirstName(userProfile?.name || "");
+    setEditLastName(userProfile?.lastName || "");
+    setShowEditNameModal(true);
   };
 
   // Submit decline application
@@ -275,6 +285,34 @@ export const UserProfilePage: React.FC = () => {
       await fetchUserData();
     } catch (error: any) {
       setActionError(error.message || "Failed to review credit limit");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Submit edit user name
+  const handleSubmitEditName = async () => {
+    if (!userId || !editFirstName.trim()) {
+      setActionError("First name is required");
+      return;
+    }
+
+    try {
+      setActionLoading(true);
+      setActionError(null);
+      await creditApplicationService.editUserName(
+        userId,
+        editFirstName.trim(),
+        editLastName.trim() || undefined
+      );
+      setActionSuccess("User name updated successfully");
+      setShowEditNameModal(false);
+      setEditFirstName("");
+      setEditLastName("");
+      // Refresh user data
+      await fetchUserData();
+    } catch (error: any) {
+      setActionError(error.message || "Failed to update user name");
     } finally {
       setActionLoading(false);
     }
@@ -370,6 +408,13 @@ export const UserProfilePage: React.FC = () => {
 
             {/* Action Buttons */}
             <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={handleEditUserName}
+                className="bg-purple-50 border-purple-200 text-purple-800 hover:bg-purple-100"
+              >
+                Edit Name
+              </Button>
               <Button
                 variant="outline"
                 onClick={handleReviewUser}
@@ -2037,6 +2082,85 @@ export const UserProfilePage: React.FC = () => {
               className="bg-yellow-50 border-yellow-200 text-yellow-800 hover:bg-yellow-100"
             >
               Update Credit Limit
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Edit User Name Modal */}
+      <Modal
+        isOpen={showEditNameModal}
+        onClose={() => {
+          setShowEditNameModal(false);
+          setEditFirstName("");
+          setEditLastName("");
+          setActionError(null);
+        }}
+        title="Edit User Name"
+        size="md"
+      >
+        <div className="space-y-4">
+          <p className="text-gray-600">
+            Update the user's first name and last name:
+          </p>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              First Name <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              placeholder="Enter first name..."
+              value={editFirstName}
+              onChange={(e) => setEditFirstName(e.target.value)}
+              disabled={actionLoading}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Last Name
+            </label>
+            <input
+              type="text"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              placeholder="Enter last name (optional)..."
+              value={editLastName}
+              onChange={(e) => setEditLastName(e.target.value)}
+              disabled={actionLoading}
+            />
+          </div>
+
+          {actionError && (
+            <Alert
+              type="error"
+              message={actionError}
+              onClose={() => setActionError(null)}
+            />
+          )}
+
+          <div className="flex gap-2 justify-end">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setShowEditNameModal(false);
+                setEditFirstName("");
+                setEditLastName("");
+                setActionError(null);
+              }}
+              disabled={actionLoading}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleSubmitEditName}
+              disabled={actionLoading || !editFirstName.trim()}
+              isLoading={actionLoading}
+              className="bg-purple-600 hover:bg-purple-700"
+            >
+              Update Name
             </Button>
           </div>
         </div>

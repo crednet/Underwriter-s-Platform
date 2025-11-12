@@ -70,7 +70,6 @@ export const ApplicationsPage: React.FC = () => {
       setTotalPages(response.data.meta.totalPages);
       setTotalRecords(response.data.meta.total);
     } catch (error: unknown) {
-      console.error("Failed to fetch applications:", error);
       const axiosError = error as any;
 
       // Check for 401/403 errors - these should be handled by the interceptor
@@ -79,9 +78,6 @@ export const ApplicationsPage: React.FC = () => {
         axiosError.response?.status === 401 ||
         axiosError.response?.status === 403
       ) {
-        console.warn(
-          "Authentication error detected, clearing tokens and redirecting..."
-        );
         localStorage.removeItem("auth_token");
         localStorage.removeItem("auth_user");
         localStorage.removeItem("user_permissions");
@@ -150,7 +146,6 @@ export const ApplicationsPage: React.FC = () => {
       );
       setSelectedApplication(response.data);
     } catch (error: unknown) {
-      console.error("Failed to fetch application details:", error);
       const axiosError = error as any;
 
       const errorMessage =
@@ -168,6 +163,7 @@ export const ApplicationsPage: React.FC = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "approved":
+      case "auto_approved":
         return "bg-green-100 text-green-800";
       case "pending":
         return "bg-yellow-100 text-yellow-800";
@@ -288,6 +284,7 @@ export const ApplicationsPage: React.FC = () => {
               <option value="">All Statuses</option>
               <option value="pending">Pending</option>
               <option value="approved">Approved</option>
+              <option value="auto_approved">Auto Approved</option>
               <option value="not_approved">Not Approved</option>
             </select>
           </div>
