@@ -1,7 +1,9 @@
 import axios, { type AxiosInstance, AxiosError } from "axios";
 
-// Selfie API Configuration
-const SELFIE_API_BASE_URL = import.meta.env.VITE_SELFIE_API_BASE_URL;
+// Selfie API Configuration (Credit Companion API)
+const SELFIE_API_BASE_URL =
+  import.meta.env.VITE_CREDIT_COMPANION_API_BASE_URL ||
+  "http://172.16.0.18:7007/api";
 
 // Create separate axios instance for Selfie API
 const selfieApiClient: AxiosInstance = axios.create({

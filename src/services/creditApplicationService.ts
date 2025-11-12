@@ -1,8 +1,9 @@
 import axios, { type AxiosInstance, AxiosError } from "axios";
 
-// Credit Applications API Configuration
+// Credit Applications API Configuration (Credit Companion API)
 const CREDIT_API_BASE_URL =
-  import.meta.env.VITE_CREDIT_API_BASE_URL || "http://172.16.0.18:7007/api";
+  import.meta.env.VITE_CREDIT_COMPANION_API_BASE_URL ||
+  "http://172.16.0.18:7007/api";
 
 // Create separate axios instance for Credit Applications API
 const creditApiClient: AxiosInstance = axios.create({
@@ -106,6 +107,22 @@ export interface CreditApplicationQueryParams {
   bankStatementStatus?: string;
 }
 
+// Action Response Types
+export interface DeclineApplicationResponse {
+  data: any;
+  message: string;
+}
+
+export interface ApproveApplicationResponse {
+  data: any;
+  message: string;
+}
+
+export interface ReviewLimitResponse {
+  data: any;
+  message: string;
+}
+
 // Credit Applications Service
 export const creditApplicationService = {
   /**
@@ -204,6 +221,106 @@ export const creditApplicationService = {
         throw new Error(axiosError.message);
       }
       throw new Error("Failed to fetch credit application details");
+    }
+  },
+
+  /**
+   * Decline a user's application
+   */
+  declineApplication: async (
+    userId: string,
+    reason: string
+  ): Promise<DeclineApplicationResponse> => {
+    try {
+      const response = await creditApiClient
+        .post<DeclineApplicationResponse>(
+          `/admin/credit-applications/decline-application/${userId}`,
+          { reason }
+        )
+        .then((res) => res.data);
+
+      return response;
+    } catch (error: unknown) {
+      console.error("Decline application error:", error);
+
+      const axiosError = error as AxiosError;
+      if (axiosError.response?.data) {
+        const data = axiosError.response.data as { message?: string };
+        if (data.message) {
+          throw new Error(data.message);
+        }
+      }
+      if (axiosError.message) {
+        throw new Error(axiosError.message);
+      }
+      throw new Error("Failed to decline application");
+    }
+  },
+
+  /**
+   * Approve a user's application
+   */
+  approveApplication: async (
+    userId: string,
+    creditLimit: number
+  ): Promise<ApproveApplicationResponse> => {
+    try {
+      const response = await creditApiClient
+        .post<ApproveApplicationResponse>(
+          `/admin/credit-applications/approve-application/${userId}`,
+          { creditLimit }
+        )
+        .then((res) => res.data);
+
+      return response;
+    } catch (error: unknown) {
+      console.error("Approve application error:", error);
+
+      const axiosError = error as AxiosError;
+      if (axiosError.response?.data) {
+        const data = axiosError.response.data as { message?: string };
+        if (data.message) {
+          throw new Error(data.message);
+        }
+      }
+      if (axiosError.message) {
+        throw new Error(axiosError.message);
+      }
+      throw new Error("Failed to approve application");
+    }
+  },
+
+  /**
+   * Review and adjust a user's credit limit
+   */
+  reviewLimit: async (
+    userId: string,
+    action: "increase" | "decrease",
+    newLimit: number
+  ): Promise<ReviewLimitResponse> => {
+    try {
+      const response = await creditApiClient
+        .post<ReviewLimitResponse>(
+          `/admin/credit-applications/review-limit/${userId}`,
+          { action, newLimit }
+        )
+        .then((res) => res.data);
+
+      return response;
+    } catch (error: unknown) {
+      console.error("Review limit error:", error);
+
+      const axiosError = error as AxiosError;
+      if (axiosError.response?.data) {
+        const data = axiosError.response.data as { message?: string };
+        if (data.message) {
+          throw new Error(data.message);
+        }
+      }
+      if (axiosError.message) {
+        throw new Error(axiosError.message);
+      }
+      throw new Error("Failed to review credit limit");
     }
   },
 };
